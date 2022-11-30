@@ -3,6 +3,7 @@
 The data directory contains:
 - the raw transition rates in  Final_merged_data_MA_Lines
 - the A6140 G matrix released in the Mallard Stasis manuscript
+- a table with the sample size per assay block
 
 The Rcode directory contains all code to reproduce the analysis.
 
