@@ -46,6 +46,7 @@ plot.acfs <- function(x) {
 }
 
 # This will be a list containing the results of the MCMCglmm
+# It can be loaded from the Dryad directory
 VCV_mat = NULL
 
 # Split the data set by ancestral lines and only retain the MA lines
@@ -107,14 +108,16 @@ for(i in 1:nrow(VCV_mat[[1]]$VCV_Mat)){
 	sampled_variance_PB=rbind(sampled_variance_PB,c(sum(eigen(matrix(VCV_mat[[2]]$VCV_Mat[i,1:36],6,6)/2)$values),eigen(matrix(VCV_mat[[2]]$VCV_Mat[i,1:36],6,6)/2)$values))
 }
 
-# Save all work
-save(list=ls(),file="Output_files/RData/M_matrices_estimates.RData")
+# Output the MCMCglmm results for data archiving
+save(list="VCV_mat",file="Output_files/RData/MCMC_glmm_output.RData")
 
+# Work can be saved here
+#save(list=ls(),file="Output_files/RData/M_matrices_estimates.RData")
 ### Restart from saved work - Produce the plots for Figure 3 and Figure S2
-
-rm(list=ls())
-load("Output_files/RData/M_matrices_estimates.RData")
+#rm(list=ls())
+#load("Output_files/RData/M_matrices_estimates.RData")
 # Vector for colors in plot
+
 v_col = c("chartreuse","cadetblue1", "cornflowerblue", "slateblue2", "violetred1","darkorange","firebrick")
 
 # Load the 1000 random matrices generated with data permutations

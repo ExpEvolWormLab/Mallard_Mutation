@@ -14,7 +14,10 @@ library(nlme)
 library(parallel)
 library(RColorBrewer)
 
-load("Output_files/RData/M_matrices_estimates_scaled.RData")
+## Code that performs the Tensor analysis and the related plots
+
+load("Output_files/RData/MCMC_glmm_output_SCALED.RData")
+vect_P_traits = c("T12", "T13", "T21", "T23", "T31","T32")
 
 angle_eigenV <- function(x, y) {
   dot.prod <- x %*% y
@@ -68,6 +71,7 @@ for (i in 1:m) {
   }
 }
 
+# Load functions from Hine et al.  (adapted)
 source('Rcode/functions_tensor.R', chdir = TRUE)
 
 HHGarray <- array(, c(n, n, m, MCMCsamp))
@@ -79,6 +83,28 @@ for (k in 1:MCMCsamp) {
 }
 
 ## Create a pedigree
+A6140_env <- new.env()
+load(file='data/VCV_A6140.RData',envir=A6140_env)
+final_A6140 <-  subset(A6140_env$final_merged,population=='A6140' & location_label=='Lisbon')
+
+final_merged=read.table("data/Final_merged_data_MA_Lines.txt",sep="\t",h=TRUE)
+final_merged$anc_line=substring(final_merged$pop_label,1,2)
+N2lines= subset(final_merged, anc_line =="N2" & pop_label!="N2ancL0")
+PBlines= subset(final_merged, anc_line =="PB" & pop_label!="PBancL0")
+
+
+## Scale with the mean P variance
+meanSd_A6140 <- mean(colSds(as.matrix(final_A6140[,vect_P_traits])))
+meanSd_N2 <- mean(colSds(as.matrix(N2lines[,vect_P_traits])))
+meanSd_PB <- mean(colSds(as.matrix(PBlines[,vect_P_traits])))
+
+for(i in 1:6){
+  final_A6140[,vect_P_traits[i]] <- (final_A6140[,vect_P_traits[i]]-mean(final_A6140[,vect_P_traits[i]]))/meanSd_A6140
+  N2lines[,vect_P_traits[i]] <- (N2lines[,vect_P_traits[i]]-mean(N2lines[,vect_P_traits[i]]))/meanSd_N2
+  PBlines[,vect_P_traits[i]] <- (PBlines[,vect_P_traits[i]]-mean(PBlines[,vect_P_traits[i]]))/meanSd_PB
+}
+
+
 final_A6140$anc_line = 'A6140'
 shared_names <- names(final_A6140)[names(final_A6140)%in%names(N2lines)]
 
@@ -105,9 +131,10 @@ df_for_tensor$population=as.factor(as.character(df_for_tensor$anc_line))
 rm(i)
 
 # Here we save a file that could be used on a server to compute the randomized
-# eigentensors that are computationaly demanding.
+# eigentensors that are computationaly demanding. We share on dryad the results
+# of this long process that can be loaded below
 
-save(list=c("ped_all","population_for_ped","n","m","Gnames","Garray","df_for_tensor","Earray2","traitnames","nb_trait"),file='Output_files/RData/File_for_parallel_processing_N2PB_withA6140.RData')
+#save(list=c("ped_all","population_for_ped","n","m","Gnames","Garray","df_for_tensor","Earray2","traitnames","nb_trait"),file='Output_files/RData/File_for_parallel_processing_N2PB_withA6140.RData')
 
 run_parallel_MCMC <- function(i){
   
@@ -169,14 +196,14 @@ param_list=list()
 for(i in 1:1000) param_list[[i]] <- i
 List_output <-parLapply(clust, param_list, run_parallel_MCMC)
 stopCluster(clust)
-save(list=ls(),file="Output_files/RData/Tensor_processed_N2PB_withA6140.Rdata")
+
+# We save here in Dryad the output of this long procedure
+save(list="List_output",file="Output_files/RData/Tensor_processed_N2PB_withA6140.Rdata")
 
 ### End of the parallel thread
 
-#### Back on local computer
-source('Rcode/functions_tensor.R', chdir = TRUE)
 load('Output_files/RData/File_for_parallel_processing_N2PB_withA6140.RData')
-load('Output_files/RData/Tensor_processed_N2PB_withA6140.Rdata')
+
 
 for(i in 1:MCMCsamp){
   for(k in 1:m){

@@ -9,6 +9,8 @@ library(matrixStats)
 library(boot)
 library(dplyr)
 
+## This code produce the Null expectation for the G matrices by shuffling the line ID and block ID columns
+
 # No prior correction
 final_merged=read.table("data/Final_merged_data_MA_Lines.txt",sep="\t",h=TRUE)
 head(final_merged)
@@ -78,4 +80,4 @@ for(iii in 1:1000){
   }
 }
 
-save(list=ls(),file="Output_files/RData/Mmatrix_Null.RData")
+save(list=c("PB_G1_null","N2_G1_null"),file="Output_files/RData/Mmatrix_Null.RData")

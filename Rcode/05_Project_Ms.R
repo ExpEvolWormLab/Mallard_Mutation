@@ -11,9 +11,9 @@ library(dplyr)
 v_col = c("chartreuse","cadetblue1", "cornflowerblue", "slateblue2", "violetred1","darkorange","firebrick")
 
 
-#Figure 3C and 5D
+#Projections and angles between Mmax and Gmax vectors - Figure 3C and 5D
 
-load("Output_files/RData/M_matrices_estimates.RData")
+load("Output_files/RData/MCMC_glmm_output.RData")
 
 ## Compute the projections of mmax / gmax - posterior modes
 N2mmax = eigen(VCV_mat[[1]]$G1_mat/2)$vectors
